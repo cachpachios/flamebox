@@ -48,6 +48,11 @@ So by doing exactly that, we can run a container in a MicroVM.
 Step by step:
 
 - The image layers is extracted into a SquashFS filesystem.
-- A VM is started with the SquashFS as the root filesystem.
+- A VM is started with the SquashFS as the root filesystem, marked read-only.
 
 Success! Simple, right?
+
+Extending it to allow tun-tap networking, maybe a writable layer with OverlayFS on the root fs and additional mounts would be a bit more work, but thats also pretty straight forward.
+
+Of course a proper container runtime should follow the OCI runtime spec which complicates things significantly.
+But thats not the goal here.
