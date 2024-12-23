@@ -1,10 +1,11 @@
 # FlameBox
 
-This is an POC of creating the absolute minimal container "runtime" for OCI container images (i.e Docker) in MicroVms like Firecracker using Rust.
+This is an POC of creating the absolute minimal container "runtime" for OCI container images (i.e Docker) in MicroVms powered by [Firecracker](https://github.com/firecracker-microvm/firecracker) using Rust.
 
 Obviously this is a personal POC project, but public for anyone who find it interesting, educational or useful.
 
-This is not a novel idea by any stretch of the imagination, but I wanted to see how far I could get with it.
+This is not a novel idea by any stretch of the imagination, for real implementations see Kata Containers, Flintlock,
+Firecracker Containerd, etc.
 
 ## Features
 
@@ -32,7 +33,7 @@ Using a proper VM for isolation, with its own kernel, would be more secure.
 ### MicroVMs
 
 MicroVMs is basically just like any other VM but more lightweight and is therefore faster, especially to boot up.
-This is done by limiting the number of devices to absolute bare minimum with only highly performant virtualized network and storage devices, and also not going through the whole regular BIOS boot process.
+This is done by limiting the number of devices to absolute bare minimum with only highly performant virtualized network and storage devices, avoiding emulation as far as possible, and also not going through the whole regular BIOS boot process.
 
 But containers are awesome, its a scalable, reproducible and easy way to package a application and all its dependencies (all the way to what we "traditionally" think of as the OS) into a single image.
 
