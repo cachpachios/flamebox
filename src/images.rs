@@ -1,9 +1,10 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
-use oci_spec::image::{Arch, ImageManifest, Os};
+use oci_spec::image::{Arch, ImageManifest, MediaType, Os};
 use oci_spec::{distribution::Reference, image::ImageIndex};
 use reqwest::blocking::Client;
 use serde::Deserialize;
+use walkdir::WalkDir;
 
 #[derive(Debug)]
 pub enum ImageErrors {
@@ -23,7 +24,11 @@ impl ImageStore {
         ImageStore { root }
     }
 
-    pub fn pull_image(self, reference: &str, auth_token: Option<&str>) -> Result<(), ImageErrors> {
+    pub fn pull_image(
+        &self,
+        reference: &str,
+        auth_token: Option<&str>,
+    ) -> Result<PathBuf, ImageErrors> {
         let reference = Reference::try_from(reference)
             .map_err(|_| ImageErrors::BadlyFormattedReferenceString)?;
 
@@ -59,7 +64,11 @@ impl ImageStore {
             .json()
             .map_err(|_| ImageErrors::UnableToParse)?;
 
-        println!("Pulled manifest: {}", compatible_manifest.digest());
+        println!(
+            "Pulled manifest: {} for {}",
+            compatible_manifest.digest(),
+            reference.repository()
+        );
 
         let folder = self.root.join(reference.repository());
         let _ = std::fs::create_dir_all(&folder);
@@ -70,37 +79,31 @@ impl ImageStore {
         serde_json::to_writer(&file, &manifest)
             .map_err(|_| ImageErrors::IOErr("Unable to write manifest to file."))?;
 
-        let blob_folder = folder.join("blobs");
-        let _ = std::fs::create_dir_all(&blob_folder);
+        let rootfs_folder = folder.join("rootfs");
+        let _ = std::fs::create_dir_all(&rootfs_folder);
 
-        for (i, blob) in manifest.layers().iter().enumerate() {
+        for (i, layer) in manifest.layers().iter().enumerate() {
             println!(
-                "Downloading layer {}/{}: {} (Size: {})",
+                "Downloading and extracting layer {}/{}: {} (Size: {})",
                 i + 1,
                 manifest.layers().len(),
-                blob.digest(),
-                blob.size()
+                layer.digest(),
+                layer.size()
             );
             let blob_url = format!(
                 "https://{}/v2/{}/blobs/{}",
                 reference.resolve_registry(),
                 reference.repository(),
-                blob.digest()
+                layer.digest()
             );
 
-            let blob_file = blob_folder.join(blob.digest().to_string());
-            let file: std::fs::File = std::fs::File::create(blob_file)
-                .map_err(|_| ImageErrors::IOErr("Unable to create blob file in FS."))?;
-
-            let blob = get(&blob_url, auth_token)?
-                .bytes()
-                .map_err(|_| ImageErrors::NetworkError)?;
-
-            std::io::copy(&mut blob.as_ref(), &mut &file)
-                .map_err(|_| ImageErrors::IOErr("Unable to write blob data to file."))?;
+            let _ = std::fs::create_dir_all(&folder);
+            let mut blob_resp =
+                get(&blob_url, auth_token).map_err(|_| ImageErrors::NetworkError)?;
+            extract_layer(&mut blob_resp, &rootfs_folder, layer.media_type())?;
         }
 
-        Ok(())
+        Ok(folder)
     }
 }
 
@@ -133,4 +136,33 @@ fn get(url: &str, auth_token: Option<&str>) -> Result<reqwest::blocking::Respons
         request = request.bearer_auth(token);
     }
     request.send().map_err(|_| ImageErrors::NetworkError)
+}
+
+fn extract_layer(
+    blob: &mut impl std::io::Read,
+    output_folder: &Path,
+    media_type: &MediaType,
+) -> Result<(), ImageErrors> {
+    let reader = match media_type {
+        MediaType::ImageLayerGzip => {
+            let reader = flate2::read::GzDecoder::new(blob);
+            Box::new(reader) as Box<dyn std::io::Read>
+        }
+        MediaType::ImageLayerZstd => {
+            let reader = flate2::read::ZlibDecoder::new(blob);
+            Box::new(reader) as Box<dyn std::io::Read>
+        }
+        MediaType::ImageLayer => Box::new(blob) as Box<dyn std::io::Read>,
+        _ => {
+            return Err(ImageErrors::IOErr(
+                "Unsupported media type for layer in manifest.",
+            ))
+        }
+    };
+
+    let mut tar = tar::Archive::new(reader);
+    tar.set_overwrite(true);
+    tar.unpack(output_folder)
+        .map_err(|_| ImageErrors::IOErr("Unable to extract layer."))?;
+    Ok(())
 }

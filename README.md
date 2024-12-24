@@ -16,6 +16,13 @@ Firecracker Containerd, etc.
 
 Maybe future extensions would be to use something like OverlayFS to allow ephemeral changes to the container filesystem, as expected with Docker. Another to create a virtual network stack and attach the VM to it.
 
+## Getting started
+
+### Build requirements
+
+Obv, install cargo & rust. Also (ubuntu) install `libsquashfs-dev`.
+
+
 ## Why?
 
 ### Regular Containers
