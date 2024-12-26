@@ -28,7 +28,7 @@ impl ImageStore {
         &self,
         reference: &str,
         auth_token: Option<&str>,
-    ) -> Result<PathBuf, ImageErrors> {
+    ) -> Result<(ImageManifest, PathBuf), ImageErrors> {
         let reference = Reference::try_from(reference)
             .map_err(|_| ImageErrors::BadlyFormattedReferenceString)?;
 
@@ -103,7 +103,7 @@ impl ImageStore {
             extract_layer(&mut blob_resp, &rootfs_folder, layer.media_type())?;
         }
 
-        Ok(folder)
+        Ok((manifest, rootfs_folder))
     }
 }
 

@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 use images::docker_io_oauth;
 
+mod fsutils;
 mod images;
 
 fn main() {
@@ -9,9 +10,11 @@ fn main() {
     let auth = docker_io_oauth("repository", "library/python", &["pull"]).expect("Unable to auth.");
     println!("Authenticated with {}", auth);
 
-    let img_folder = i
+    let (manifest, root_folder) = i
         .pull_image("python:3.12", Some(&auth))
         .expect("Unable to pull image");
-    let img_folder = PathBuf::from("imgs/library/python");
-    println!("Image pulled to {:?}", img_folder);
+    println!("Pulled image to {:?}", root_folder);
+    fsutils::build_squash_fs(&root_folder, &PathBuf::from("root.sfs"))
+        .expect("Unable to build squashfs");
+    println!("Built squashfs");
 }
