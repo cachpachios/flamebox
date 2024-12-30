@@ -10,7 +10,7 @@ fn main() {
     let auth = docker_io_oauth("repository", "library/python", &["pull"]).expect("Unable to auth.");
     println!("Authenticated with {}", auth);
 
-    let (manifest, root_folder) = i
+    let (_manifest, root_folder) = i
         .pull_image("python:3.12", Some(&auth))
         .expect("Unable to pull image");
     println!("Pulled image to {:?}", root_folder);

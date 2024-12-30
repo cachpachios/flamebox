@@ -4,7 +4,6 @@ use oci_spec::image::{Arch, ImageManifest, MediaType, Os};
 use oci_spec::{distribution::Reference, image::ImageIndex};
 use reqwest::blocking::Client;
 use serde::Deserialize;
-use walkdir::WalkDir;
 
 #[derive(Debug)]
 pub enum ImageErrors {
