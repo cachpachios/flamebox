@@ -10,9 +10,10 @@ Firecracker Containerd, etc.
 ## Features
 
 - [x] Pull OCI images from registries (Docker Hub) (just nice to have...)
-- [ ] Extract image layers into a combined SquashFS
+- [x] Extract image layers into a ext4 filesystem
+- [ ] Provide suitable /sbin/init and host etc
 - [ ] Boot the VM with the filesystem
-- [ ] Run an entrypoint command in the VM
+- [ ] Networking...
 
 Maybe future extensions would be to use something like OverlayFS to allow ephemeral changes to the container filesystem, as expected with Docker. Another to create a virtual network stack and attach the VM to it.
 
