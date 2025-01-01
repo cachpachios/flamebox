@@ -1,4 +1,4 @@
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use oci_spec::image::{Arch, ImageManifest, MediaType, Os};
 use oci_spec::{distribution::Reference, image::ImageIndex};
