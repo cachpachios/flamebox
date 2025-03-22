@@ -17,7 +17,7 @@ Firecracker Containerd, etc.
 - [x] Pull OCI images from registries (Docker Hub) (just nice to have...)
 - [x] Extract image layers into a ext4 filesystem
 - [ ] Provide suitable /sbin/init and host etc
-- [ ] Boot the VM with the filesystem
+- [x] Boot the VM with the filesystem
 - [ ] Networking...
 
 Maybe future extensions would be to use something like OverlayFS to allow ephemeral changes to the container filesystem, as expected with Docker. Another to create a virtual network stack and attach the VM to it.
