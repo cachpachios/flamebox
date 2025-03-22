@@ -1,3 +1,8 @@
+# DEPRECATED
+This was a cool project to get started with MicroVMs, however the underlying idea to extract the container INTO a the rootfs of the VM has drawbacks.
+You would need a fully OCI compliant init process inside the VM anyways, and at that point why not just use runc inside the VM, similar to how Kata does things.
+
+
 # FlameBox
 
 This is an POC of creating the absolute minimal container "runtime" for OCI container images (i.e Docker) in MicroVms powered by [Firecracker](https://github.com/firecracker-microvm/firecracker) using Rust.
