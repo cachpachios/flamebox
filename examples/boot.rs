@@ -27,6 +27,7 @@ fn main() {
     std::thread::sleep(time::Duration::from_millis(100));
 
     fc.start_vm().expect("Unable to start vm");
+    println!("VM Started. Will shutdown in 30s.");
 
     std::thread::sleep(time::Duration::from_secs(30));
 
