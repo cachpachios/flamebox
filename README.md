@@ -1,7 +1,7 @@
 # DEPRECATED
 This was a cool project to get started with MicroVMs, however the underlying idea to extract the container INTO a the rootfs of the VM has drawbacks.
 You would need a fully OCI compliant init process inside the VM anyways, and at that point why not just use runc inside the VM, similar to how Kata does things.
-
+Also out of lazyness, the host kernel was utilized to create mount points to the filesystem when extracting the container image. That should probably happen fully in user-space... Yeah never production ready stuff here.
 
 # FlameBox
 
